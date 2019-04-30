@@ -6,7 +6,7 @@ Software:
 
 macos:
 
-installing using [brew.sh]https://brew.sh):
+installing using [brew.sh](https://brew.sh):
 
     brew cask install virtualbox
     brew cask install virtualbox-extension-pack
