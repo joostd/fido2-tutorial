@@ -7,6 +7,8 @@ TOKEN=FillInYourTokenHerePlease
 # https://smallstep.com/docs/cli/certificate/verify/
 # macos: brew install step wget
 
+all: toc.json
+
 toc.jwt:
 	curl https://mds2.fidoalliance.org/?token=${TOKEN} --silent --output toc.jwt
 

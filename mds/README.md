@@ -24,7 +24,19 @@ In short:
 You can use a tool like [step](https://smallstep.com/docs/cli/crypto/jwt/)
 
 On macos:
+
     brew install step
+
+All these steps in sequence:
+
+    wget --quiet https://mds.fidoalliance.org/Root.cer
+    curl https://mds2.fidoalliance.org/?token=FillInYourTokenHerePlease --silent --output toc.jwt
+    step crypto jwt inspect --insecure < toc.jwt | jq -r '.header.x5c[1]' | base64 -D | openssl x509 -inform der -out CA-1.pem
+    step crypto jwt inspect --insecure < toc.jwt | jq -r '.header.x5c[0]' | base64 -D | openssl x509 -inform der -out MetadataTOCSigner3.pem
+    openssl verify -CAfile Root.cer CA-1.pem 
+    openssl verify -CAfile Root.cer -untrusted CA-1.pem MetadataTOCSigner3.pem 
+    openssl x509 -in MetadataTOCSigner3.pem -noout -pubkey > MetadataTOCSigner3.pub
+    step crypto jwt verify --key MetadataTOCSigner3.pub --subtle < toc.jwt | jq .payload > toc.json
 
 Alternatively, use the Makefile:
 
