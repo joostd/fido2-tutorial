@@ -1,0 +1,56 @@
+You are provided with a [Security Key by Yubico](https://www.yubico.com/product/security-key-nfc-by-yubico)
+(USB ID 1050:0120)
+
+# Yubikey manager
+
+Download [Yubikey Manager](https://www.yubico.com/products/services-software/download/yubikey-manager/),
+available for linux, macos and Windows.
+
+    sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 32CBA1A9
+    sudo add-apt-repository ppa:yubico/stable
+    sudo apt-get update
+    sudo apt-get install yubikey-manager-qt
+    
+See [Enabling the Yubico PPA on Ubuntu](https://support.yubico.com/support/solutions/articles/15000010964-enabling-the-yubico-ppa-on-ubuntu)
+
+## YubiKey Manager CLI
+
+There is also a command line version called `ykman`.
+See [YubiKey Manager CLI User Manual](https://support.yubico.com/support/solutions/articles/15000012643-yubikey-manager-cli-ykman-user-manual)
+
+On macos, use [brew](http://brew.sh) to install:
+
+    brew install ykman
+    
+Examples:
+
+```
+$ ykman list
+Security Key NFC [FIDO]
+$ ykman info
+Device type: Security Key NFC
+Serial number: Not set or unreadable
+Firmware version: 5.1.2
+Form factor: Keychain (USB-A)
+Enabled USB interfaces: FIDO
+NFC interface is enabled.
+
+Applications	USB          	NFC          
+OTP     	Not available	Not available	
+FIDO U2F	Enabled      	Enabled      	
+OpenPGP 	Not available	Not available	
+PIV     	Not available	Not available	
+OATH    	Not available	Not available	
+FIDO2   	Enabled      	Enabled      	
+$ ykman mode
+Current connection mode is: FIDO
+Supported USB interfaces are: FIDO
+$ ykman config usb --list
+FIDO U2F
+FIDO2
+$ ykman config nfc --list
+FIDO U2F
+FIDO2
+$ ykman fido info
+PIN is not set.
+```
