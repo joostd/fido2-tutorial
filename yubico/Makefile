@@ -1,22 +1,42 @@
-cred_param:
-	echo credential challenge | openssl sha256 -binary | base64 > cred_param
-	echo relying party >> cred_param
-	echo user name >> cred_param
-	dd if=/dev/urandom bs=1 count=32 | base64 >> cred_param
+RELYING_PARTY=example.com
+USERNAME=John
 
-cred: cred_param
-	fido2-cred -M -i cred_param /dev/hidraw0 | fido2-cred -V -o cred
+all: verify
 
-assert_param: cred
-	echo assertion challenge | openssl sha256 -binary | base64 > assert_param
-	echo relying party >> assert_param
-	head -1 cred >> assert_param
+### 1 create credentials
 
-pubkey: cred
-	tail -n +2 cred > pubkey
+# create credential parameters (challenge, rp ID, username, user ID)
+cred_challenge:
+	dd if=/dev/urandom bs=1 count=64 | openssl sha256 -binary | base64 > cred_challenge
+	echo ${RELYING_PARTY} >> cred_challenge
+	echo ${USERNAME} >> cred_challenge
+	dd if=/dev/urandom bs=1 count=32 | base64 >> cred_challenge
 
-verify: assert_param pubkey
-	fido2-assert -G -i assert_param /dev/hidraw0 | fido2-assert -V pubkey es256
+# create credential
+cred_response: cred_challenge
+	sudo fido2-cred -M -i cred_challenge -o cred_response /dev/hidraw0
+# verify response and store credential (credential ID, pubkey)
+credential: cred_response
+	fido2-cred -V -i cred_response -o credential
+
+### 2 create assertion
+
+# create assertion parameters (challenge, rp ID, and credential ID)
+assert_challenge: credential
+	dd if=/dev/urandom bs=1 count=64 | openssl sha256 -binary | base64 > assert_challenge
+	echo ${RELYING_PARTY} >> assert_challenge
+	head -1 credential >> assert_challenge
+
+# create assertion
+assert_response: assert_challenge
+	sudo fido2-assert -G -i assert_challenge -o assert_response /dev/hidraw0 
+
+# extract pubkey from stored credentials
+pubkey: credential
+	tail -n +2 credential > pubkey
+# verify assertion
+verify: assert_response pubkey
+	fido2-assert -V -i assert_response pubkey es256
 
 clean:
-	-rm cred_param cred assert_param pubkey
+	-rm cred_challenge cred_response credential assert_challenge assert_response pubkey
